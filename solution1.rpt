@@ -1,0 +1,87 @@
+mysql> source solution1.sql;
+--------------
+/* 
+(1)	Write a SQL statement to create a single column relational table MESSAGE to store variable size strings no longer than 500 characters.
+											(1.5 marks)
+*/ CREATE TABLE MESSAGE(
+MESSAGE VARCHAR(500))
+--------------
+
+Query OK, 0 rows affected (0.04 sec)
+
+--------------
+/*
+(2)	Next, write one SQL statement to insert into the relational table MESSAGE information about the contents of a sample database that verifies the consistency constraint 
+    for each driver of all driving schedules.											
+    " The different driving schedules assigned to a driver must not overlap with each other."
+
+    The script must insert the outcomes of the consistency constraint verifications as a single column table with the following messages as the rows in the table.
+
+    A driver <insert driver licence number here> schedule <insert schedule number here> between <insert start date time here> and <insert end date time here> 
+    overlapped with schedule <insert schedule number here> between <insert the start date time here> and < insert end date time here>.
+
+    For example, if a driver's 101 schedule 1 between 2018-10-01 15:30:00 and 2019-10-10 16:20:00 overlapped with schedule 20 between 2018-10-05 8:00:00 and 2019-01-10 17:00:00, 
+    then verification of the consistency constraint must return the following message.
+
+    A driver 101 schedule 1 between 2018-10-01 15:30:00 and 2019-10-10 16:20:00  overlapped with the schedule 20 between 2018-10-05 8:00:00 and 2019-01-10 17:00:00.
+
+    Use a function CONCAT to create the messages like the one listed above.
+	
+	Note that if two schedules of a driver overlapped, only insert one row of the verification message for the pair.
+											(12.0 marks)
+*/ INSERT INTO MESSAGE (SELECT CONCAT ("A DRIVER'S ", S1.LNUM , " SCHEDULE ", S1.SNUM, " BETWEEN ", S1.START_DATE_TIME, " AND ", S1.RETURN_DATE_TIME, " OVERLAPPED WITH SCHEDULE ", S2.SNUM, " BETWEEN ", S2.START_DATE_TIME, " AND ", S2.RETURN_DATE_TIME) FROM SCHEDULE S1 JOIN SCHEDULE S2
+ON S1.LNUM = S2.LNUM AND
+S1.SNUM < S2.SNUM
+WHERE (S2.START_DATE_TIME < S1.START_DATE_TIME AND
+S2.RETURN_DATE_TIME > S1.START_DATE_TIME) OR
+(S2.RETURN_DATE_TIME > S1.RETURN_DATE_TIME AND 
+S2.START_DATE_TIME < S1.RETURN_DATE_TIME) OR
+(S2.START_DATE_TIME >= S1.START_DATE_TIME AND
+S2.RETURN_DATE_TIME <= S1.RETURN_DATE_TIME))
+--------------
+
+Query OK, 12 rows affected (0.01 sec)
+Records: 12  Duplicates: 0  Warnings: 0
+
+--------------
+/* 
+(3) Next, lists the contents of the table MESSAGE.
+											(0.9 marks)
+*/ SELECT * FROM MESSAGE
+--------------
+
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| MESSAGE                                                                                                                                                          |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+| A DRIVER'S 10001 SCHEDULE 1 BETWEEN 2019-01-12 05:00:00 AND 2019-01-17 18:00:00 OVERLAPPED WITH SCHEDULE 8 BETWEEN 2019-01-12 05:00:00 AND 2019-01-17 18:00:00   |
+| A DRIVER'S 10001 SCHEDULE 1 BETWEEN 2019-01-12 05:00:00 AND 2019-01-17 18:00:00 OVERLAPPED WITH SCHEDULE 18 BETWEEN 2017-12-15 05:00:00 AND 2019-12-17 18:00:00  |
+| A DRIVER'S 10001 SCHEDULE 2 BETWEEN 2019-02-20 05:00:00 AND 2019-02-22 18:00:00 OVERLAPPED WITH SCHEDULE 18 BETWEEN 2017-12-15 05:00:00 AND 2019-12-17 18:00:00  |
+| A DRIVER'S 10001 SCHEDULE 3 BETWEEN 2019-03-12 05:00:00 AND 2019-03-17 18:00:00 OVERLAPPED WITH SCHEDULE 18 BETWEEN 2017-12-15 05:00:00 AND 2019-12-17 18:00:00  |
+| A DRIVER'S 10001 SCHEDULE 4 BETWEEN 2019-06-29 05:00:00 AND 2019-07-06 18:00:00 OVERLAPPED WITH SCHEDULE 18 BETWEEN 2017-12-15 05:00:00 AND 2019-12-17 18:00:00  |
+| A DRIVER'S 10002 SCHEDULE 6 BETWEEN 2019-02-20 05:00:00 AND 2019-02-25 18:00:00 OVERLAPPED WITH SCHEDULE 47 BETWEEN 2019-02-20 05:00:00 AND 2019-02-25 18:00:00  |
+| A DRIVER'S 10001 SCHEDULE 8 BETWEEN 2019-01-12 05:00:00 AND 2019-01-17 18:00:00 OVERLAPPED WITH SCHEDULE 18 BETWEEN 2017-12-15 05:00:00 AND 2019-12-17 18:00:00  |
+| A DRIVER'S 10003 SCHEDULE 11 BETWEEN 2018-01-23 05:00:00 AND 2018-01-29 18:00:00 OVERLAPPED WITH SCHEDULE 38 BETWEEN 2018-01-10 05:00:00 AND 2018-01-29 18:00:00 |
+| A DRIVER'S 20002 SCHEDULE 13 BETWEEN 2019-04-23 05:00:00 AND 2019-04-26 18:00:00 OVERLAPPED WITH SCHEDULE 14 BETWEEN 2019-04-23 05:00:00 AND 2019-04-29 18:00:00 |
+| A DRIVER'S 10001 SCHEDULE 18 BETWEEN 2017-12-15 05:00:00 AND 2019-12-17 18:00:00 OVERLAPPED WITH SCHEDULE 35 BETWEEN 2018-05-24 05:00:00 AND 2018-06-03 18:00:00 |
+| A DRIVER'S 10002 SCHEDULE 36 BETWEEN 2017-02-25 05:00:00 AND 2017-02-28 18:00:00 OVERLAPPED WITH SCHEDULE 43 BETWEEN 2017-02-20 05:00:00 AND 2017-02-25 18:00:00 |
+| A DRIVER'S 30005 SCHEDULE 39 BETWEEN 2019-04-23 05:00:00 AND 2019-04-29 18:00:00 OVERLAPPED WITH SCHEDULE 46 BETWEEN 2019-04-23 05:00:00 AND 2019-04-29 18:00:00 |
++------------------------------------------------------------------------------------------------------------------------------------------------------------------+
+12 rows in set (0.00 sec)
+
+--------------
+	
+
+
+
+/* 
+(4) Finally, drop the tables SALARY and MESSAGE.
+DROP TABLE MESSAGE;
+DROP TABLE IF EXISTS SALARY;
+
+											(0.6 marks)
+*/
+--------------
+
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> notee;
